@@ -1,65 +1,65 @@
 const API_URL = "http://localhost:3000/api";
 
-export const getAllPlaces = async () => {
+const handleFetch = async (endpoint, options, status = 200, errorMessage) => {
     let response;
 
     try {
-        response = await fetch(`${API_URL}/places`, {
-            headers: { "Accept": "application/json" }
-        });
-    } catch (error) {
-        throw new Error("¡Ups! The system is down.");
-    }
-    
-    if(!response.ok) {
-        throw new Error("¡Ups! An error occurred while fetching the data.");
+        response = await fetch(`${API_URL}${endpoint}`, {
+            ...options
+        })
+    } catch(error) {
+        throw new Error("¡Ups!. The system is down")
     }
 
-    return await response.json();
-}
+    if(response.status !== status) {
+        throw new Error(errorMessage)
+    }
+    
+    return response.json();
+};
+
+export const getAllPlaces = async () => {
+    const options = {
+        headers: {
+            "Accept": "application/json"
+        }
+    }
+
+    return await handleFetch("/places", options, 200, "¡Ups!. An error ocurred while fetching the data")
+};
+
+export const getAllSelectedPlaces = async () => {
+    const options = {
+        headers: {
+            "Accept": "application/json"
+        }
+    }
+
+    return await handleFetch("/places/selected", options, 200, "¡Ups!. An error ocurred while fetching the selected places")
+};
 
 export const savePlaces = async (selectedPlaces) => {
-    let response;
-
-    try {
-        response = await fetch(`${API_URL}/places/save`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Accept": "application/json"
-            },
-            body: JSON.stringify(selectedPlaces)
-        });
-    } catch(error) {
-        throw new Error("¡Ups! The system is down.");
+    const options = {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+        },
+        body: JSON.stringify(selectedPlaces)
     }
 
-    if(response.status != 201) {
-        throw new Error("¡Ups! An error occurred while saving the selected places.");
-    }
-    
-    return await response.json();
-} 
+    return await handleFetch("/places/save", options, 201, "¡Ups!. An error ocurred while the saving places")
+};
 
 export const createPlace = async (place) => {
-    let response;
-
-    try {
-        response = await fetch(`${API_URL}/places/create`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Accept": "application/json"
-            },
-            body: JSON.stringify(place)
-        });      
-    } catch(error) {
-        throw new Error("¡Ups! The system is down.");
+    const options = {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+        },
+        body: JSON.stringify(place)
     }
 
-    if(response.status != 201) {
-        throw new Error("¡Ups! An error occurred while creating the place.");
-    }
-
-    return await response.json();
-}
+    return await handleFetch("/places/create", options, 201, "¡Ups!. An error ocurred while the creating place")
+};

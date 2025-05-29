@@ -1,35 +1,47 @@
-import { useSelectedPlace } from './libs/hooks/useSelectedPlace.mjs';
-import { useAvailablePlaces } from './libs/hooks/useAvailablePlaces.mjs';
-import { useMessageModal } from './libs/hooks/useMessageModal.mjs';
-import { useMessageInline } from './libs/hooks/useMessageInline.mjs';
-import ListPlace from './components/molecules/ListPlace/ListPlace';
-import Modal from './components/molecules/Modal/Modal';
-import Message from './components/atoms/Message/Message.jsx';
-import Form from './components/molecules/Form/Form';
+import { useState } from 'react';
+import { useLocalPlaces } from '../libs/hooks/useLocalPlaces.mjs';
+import { useAvailablePlaces } from '../libs/hooks/useAvailablePlaces.mjs';
+import { useMessageModal } from '../libs/hooks/useMessageModal.mjs';
+import { useMessageInline } from '../libs/hooks/useMessageInline.mjs';
+import ListPlace from '../components/molecules/ListPlace/ListPlace.jsx';
+import FormPage from '../pages/FormPage.jsx';
+import Modal from '../components/molecules/Modal/Modal.jsx';
+import Message from '../components/atoms/Message/Message.jsx';
 
-import './App.css'
+import "./HomePage.css"
 
 const isEmpty = array => array.length === 0;
 
 const getClassName = type => type.error ? "error" : "succes";
 
-export default function App() {
+export default function HomePage() {
+    const [showForm, setShowForm] = useState(false);
     const { isOpen, dialogRef, messageModal, showMessageModal, closeMessageModal } = useMessageModal();
     const { messageInline, showMessageInline } = useMessageInline();
     const { availablePlaces, findPlaceById, saveAvailablePlace } = useAvailablePlaces(showMessageInline, showMessageModal);
-    const { selectedPlaces, saveSelectedPlaces, deleteSelectedPlace, handleAppendSelectPlace } = useSelectedPlace(showMessageModal);
-    
+
+    const { localPlaces, saveLocalPlaces, clearLocalPlaces, deleteLocalPlace, addLocalPlace } = useLocalPlaces(showMessageModal, );
+
     const handleSelectPlace = (id) => {
         const place = findPlaceById(id);
         if(!place) {
             return;
         }
 
-        handleAppendSelectPlace(place);
+        addLocalPlace(place);
+    }
+
+    const handleSaveSelectedPlaces = () => {
+        saveLocalPlaces(localPlaces);
+        clearLocalPlaces();
     }
 
     const handleDeleteSelectedPlace = (id) => {
-        deleteSelectedPlace(id);
+        deleteLocalPlace(id);
+    }
+
+    const handleToggleForm = () => {
+        setShowForm(!showForm);
     }
 
     const messageModalCuption = isOpen && <Message className={getClassName}>{messageModal.text}</Message>
@@ -38,33 +50,35 @@ export default function App() {
     const messageEmptyAvailablePlacesCaption = isEmpty(availablePlaces) && <Message className="info">Not available places...</Message>;
     const messageAvailablePlacesCaption = messageInlineCaption || messageEmptyAvailablePlacesCaption || null;
 
-    const messageEmptySelectedPlacesCaption = isEmpty(selectedPlaces) && <Message className="info">Not selected places...</Message>;
+    const messageEmptySelectedPlacesCaption = isEmpty(localPlaces) && <Message className="info">Not selected places...</Message>;
     const messageSelectedPlacesCaption = messageEmptySelectedPlacesCaption || null;
-    
+
     return (
-        <> 
+        <section>
             <Modal open={isOpen} dialogRef={dialogRef}>
                 {messageModalCuption}
                 <button onClick={closeMessageModal}>CONFIRMAR</button>    
             </Modal>
-
+            
             <h2>Lugares elegidos</h2>
             <ListPlace 
-                places={selectedPlaces}
+                places={localPlaces}
                 message={messageSelectedPlacesCaption}
                 onClick={handleDeleteSelectedPlace}
             />
-            {!isEmpty(selectedPlaces) && <button onClick={saveSelectedPlaces}>GUARDAR SELECCIONES</button>}
-
+            {!isEmpty(localPlaces) && <button onClick={handleSaveSelectedPlaces}>GUARDAR SELECCIONES</button>}
+            
             <h2>Lugares disponibles</h2>
             <ListPlace 
                 places={availablePlaces}
                 message={messageAvailablePlacesCaption}
                 onClick={handleSelectPlace}
             />
-            
-            <Form onSaveAvailablePlace={saveAvailablePlace}/>
 
-        </>
+            <h2>Crear un nuevo lugar disponible</h2>
+            <button onClick={handleToggleForm}>Abrir formulario</button>
+
+            {showForm && <FormPage onSaveAvailablePlace={saveAvailablePlace}/>}
+        </section>
     )
 }

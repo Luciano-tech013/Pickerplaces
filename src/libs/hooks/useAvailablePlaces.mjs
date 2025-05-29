@@ -5,7 +5,6 @@ export function useAvailablePlaces(onShowMessageInline, onShowMessageModal) {
     const [availablePlaces, setAvailablePlaces] = useState([]);
     
     useEffect(() => {
-        console.log("Hola me ejecute");
         const fetchAvailablePlaces = async () => {
             try {
                 const data = await getAllPlaces();
@@ -25,9 +24,9 @@ export function useAvailablePlaces(onShowMessageInline, onShowMessageModal) {
     const saveAvailablePlace = async (place) => {
         try {
             const { message } = await createPlace(place);
-            onShowMessage(message, "success");
+            onShowMessageModal(message, "success");
         } catch(error) {
-            onShowMessage(error.message, "error");
+            onShowMessageModal(error.message, "error");
         }
     }
 

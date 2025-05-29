@@ -11,6 +11,7 @@ export function useMessageModal() {
   };
 
   const closeMessageModal = () => {
+    setMessageModal({ text: '', type: ''})
     handleToggleModal(); //Cerrar el modal
   };
 
