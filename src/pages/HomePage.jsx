@@ -1,26 +1,35 @@
-import { useState } from 'react';
 import { useLocalPlaces } from '../libs/hooks/useLocalPlaces.mjs';
 import { useAvailablePlaces } from '../libs/hooks/useAvailablePlaces.mjs';
-import { useMessageModal } from '../libs/hooks/useMessageModal.mjs';
-import { useMessageInline } from '../libs/hooks/useMessageInline.mjs';
+import { isEmpty } from '../libs/helper/arrayValidations.mjs';
+import { ChannelType, NotificationType, TargetType } from '../constants/notificationOptions.mjs';
+import { INVALID_SHOW_FORM_PAGE } from '../constants/formMessages.mjs';
 import ListPlace from '../components/molecules/ListPlace/ListPlace.jsx';
 import FormPage from '../pages/FormPage.jsx';
-import Modal from '../components/molecules/Modal/Modal.jsx';
-import Message from '../components/atoms/Message/Message.jsx';
+import Notifier from '../components/molecules/Notifier/Notifier.jsx';
+import Spinner from "../components/molecules/Spinner/Spinner.jsx";
 
 import "./HomePage.css"
 
-const isEmpty = array => array.length === 0;
-
-const getClassName = type => type.error ? "error" : "succes";
-
 export default function HomePage() {
-    const [showForm, setShowForm] = useState(false);
-    const { isOpen, dialogRef, messageModal, showMessageModal, closeMessageModal } = useMessageModal();
-    const { messageInline, showMessageInline } = useMessageInline();
-    const { availablePlaces, findPlaceById, saveAvailablePlace } = useAvailablePlaces(showMessageInline, showMessageModal);
-
-    const { localPlaces, saveLocalPlaces, clearLocalPlaces, deleteLocalPlace, addLocalPlace } = useLocalPlaces(showMessageModal, );
+    const {
+        notificationInline: notificationAvailableInline,
+        notificationModal: notificationAvailableModal,
+        resetModal: resetAvailableModal,
+        availablePlaces, 
+        findPlaceById, 
+        saveAvailablePlace,
+        loadingPlaces: loadingAvailablePlaces
+    } = useAvailablePlaces();
+    const { 
+        notificationInline: notificationLocalInline,
+        notificationModal: notificationLocalModal,
+        resetModal: resetLocalModal,
+        localPlaces,
+        saveLocalPlaces, 
+        deleteLocalPlace, 
+        addLocalPlace,
+        loadingPlaces: loadingLocalPlaces
+    } = useLocalPlaces();
 
     const handleSelectPlace = (id) => {
         const place = findPlaceById(id);
@@ -31,54 +40,58 @@ export default function HomePage() {
         addLocalPlace(place);
     }
 
-    const handleSaveSelectedPlaces = () => {
-        saveLocalPlaces(localPlaces);
-        clearLocalPlaces();
+    const handleSaveSelectedPlaces = async () => {
+        await saveLocalPlaces(localPlaces);
     }
 
-    const handleDeleteSelectedPlace = (id) => {
-        deleteLocalPlace(id);
-    }
+    //Si hay una notificacion (texto) me quedo con el objeto ese
+    const notificationLocalModalCuption = notificationLocalModal.text && notificationLocalModal;
+    const notificationAvailableModalCuption = notificationAvailableModal.text && notificationAvailableModal;
+    const notificationModalCuption = notificationLocalModalCuption || notificationAvailableModalCuption || null;
 
-    const handleToggleForm = () => {
-        setShowForm(!showForm);
-    }
+    const resetLocalModalCuption = notificationLocalModalCuption ? resetLocalModal : null;
+    const resetAvailableModalCuption = notificationAvailableModalCuption ? resetAvailableModal : null;
+    const resetModalCuption = resetLocalModalCuption || resetAvailableModalCuption || null;
 
-    const messageModalCuption = isOpen && <Message className={getClassName}>{messageModal.text}</Message>
-    const messageInlineCaption = messageInline && <Message className="error">{messageInline}</Message>;
+    const messageLocalPlacesCuption = notificationLocalInline && notificationLocalInline.target === TargetType.LOCAL ? notificationLocalInline : null;
+    const messageAvailablePlacesCuption = notificationAvailableInline && notificationAvailableInline.target === TargetType.AVAILABLE ? notificationAvailableInline : null;
 
-    const messageEmptyAvailablePlacesCaption = isEmpty(availablePlaces) && <Message className="info">Not available places...</Message>;
-    const messageAvailablePlacesCaption = messageInlineCaption || messageEmptyAvailablePlacesCaption || null;
-
-    const messageEmptySelectedPlacesCaption = isEmpty(localPlaces) && <Message className="info">Not selected places...</Message>;
-    const messageSelectedPlacesCaption = messageEmptySelectedPlacesCaption || null;
-
+    //El unico que puede tener un ERROR de conexion es availablePlaces por sus llamadas a la API
+    const formPageShowCuption = notificationAvailableInline.type === NotificationType.ERROR ? false : true
+    
     return (
         <section>
-            <Modal open={isOpen} dialogRef={dialogRef}>
-                {messageModalCuption}
-                <button onClick={closeMessageModal}>CONFIRMAR</button>    
-            </Modal>
+            {notificationModalCuption && (
+                <Notifier notification={notificationModalCuption} channel={ChannelType.MODAL} reset={resetModalCuption}/>
+            )}
             
-            <h2>Lugares elegidos</h2>
-            <ListPlace 
-                places={localPlaces}
-                message={messageSelectedPlacesCaption}
-                onClick={handleDeleteSelectedPlace}
-            />
+            <h2>Lugares elegidos localmente</h2>
+            {loadingLocalPlaces && <Spinner/>}
+            {!loadingLocalPlaces && messageLocalPlacesCuption ? (
+                <Notifier notification={notificationLocalInline} channel={ChannelType.INLINE}/>
+            ) : (
+                <ListPlace onClick={deleteLocalPlace}>
+                    {localPlaces}
+                </ListPlace>
+            )}
             {!isEmpty(localPlaces) && <button onClick={handleSaveSelectedPlaces}>GUARDAR SELECCIONES</button>}
-            
+        
             <h2>Lugares disponibles</h2>
-            <ListPlace 
-                places={availablePlaces}
-                message={messageAvailablePlacesCaption}
-                onClick={handleSelectPlace}
-            />
+            {loadingAvailablePlaces && <Spinner/>}
+            {!loadingAvailablePlaces && messageAvailablePlacesCuption ? (
+                <Notifier notification={notificationAvailableInline} channel={ChannelType.INLINE}/>
+            ) : (
+                <ListPlace onClick={handleSelectPlace}>
+                    {availablePlaces}
+                </ListPlace>
+            )}
 
             <h2>Crear un nuevo lugar disponible</h2>
-            <button onClick={handleToggleForm}>Abrir formulario</button>
-
-            {showForm && <FormPage onSaveAvailablePlace={saveAvailablePlace}/>}
+            {!formPageShowCuption ? (
+                <Notifier notification={{ text: INVALID_SHOW_FORM_PAGE, type: NotificationType.INFO }} channel={ChannelType.INLINE}/>
+            ) : (
+                <FormPage onSaveAvailablePlace={saveAvailablePlace}/>
+            )}
         </section>
     )
 }

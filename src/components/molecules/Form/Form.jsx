@@ -1,14 +1,10 @@
-import { useState } from "react";
-
-export default function Form({ invalidation, onValidation, onSubmit }) {
-    const [name, setName] = useState('');
-
+export default function Form({ name, onChangeName, invalidation, onValidation, onSubmit }) {
     const handleChangeName = (event) => {
         let value = event.target.value;
 
         onValidation("name", value);
 
-        setName(value);
+        onChangeName(value);
     }
 
     const handleChangeImage = (event) => {

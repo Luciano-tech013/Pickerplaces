@@ -1,0 +1,86 @@
+{
+  "places": [
+    {
+      "id": 1,
+      "image": {
+        "src": "../../../public/assets/cataratas_iguazu.avif",
+        "alt": "Las Cataratas del Iguazú"
+      },
+      "name": "Las Cataratas del Iguazú",
+      "default": true
+    },
+    {
+      "id": 2,
+      "image": {
+        "src": "../../../public/assets/piramides_egipto.png",
+        "alt": "Piramides de Egipto"
+      },
+      "name": "Piramides de Egipto",
+      "default": true
+    },
+    {
+      "id": 3,
+      "image": {
+        "src": "../../../public/assets/cataratas_niagara.webp",
+        "alt": "Las Cataratas del Niagara"
+      },
+      "name": "Las Cataratas del Niágara",
+      "default": true
+    },
+    {
+      "id": 4,
+      "image": {
+        "src": "../../../public/assets/glacial_perito_moreno.webp",
+        "alt": "El Glacial Perito Moreno"
+      },
+      "name": "El Glacial Perito Moreno",
+      "default": true
+    },
+    {
+      "id": 5,
+      "image": {
+        "src": "../../../public/assets/cerro_7_colores.jpeg",
+        "alt": "El cerro de los 7 colores"
+      },
+      "name": "El cerro de los 7 colores",
+      "default": true
+    },
+    {
+      "id": 6,
+      "image": {
+        "src": "../../../public/assets/cordillera_de_los_andes.jpg",
+        "alt": "La Cordillera de los Andes"
+      },
+      "name": "La Cordillera de los Andes",
+      "default": true
+    },
+    {
+      "id": 7,
+      "image": {
+        "src": "../../../public/assets/salinas_grandes.jpeg",
+        "alt": "Las Salinas Grandes"
+      },
+      "name": "Las Salinas Grandes",
+      "default": true
+    },
+    {
+      "id": 8,
+      "image": {
+        "src": "../../../public/assets/machupichu.jpg",
+        "alt": "Las Ruinas del Machupichu"
+      },
+      "name": "Las Ruinas del Machupichu",
+      "default": true
+    },
+    {
+      "id": 9,
+      "image": {
+        "src": "../../../public/assets/piedra_movediza.jpg",
+        "alt": "La Piedra Movediza"
+      },
+      "name": "La Piedra Movediza",
+      "default": true
+    }
+  ],
+  "placesSelected": []
+}

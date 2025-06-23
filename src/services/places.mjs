@@ -1,65 +1,90 @@
 const API_URL = "http://localhost:3000/api";
 
-const handleFetch = async (endpoint, options, status = 200, errorMessage) => {
+const hasError = (statusResponse, data, statusExpected, defaultMessage = "¡Ups!. An error ocurred") => {
+    if(statusResponse !== statusExpected) {
+        const apiMessage = data ? data.message : defaultMessage;
+        throw new Error(apiMessage);   
+    }
+}
+
+const request = async (options, endpoint, status = 200) => {
     let response;
 
     try {
-        response = await fetch(`${API_URL}${endpoint}`, {
-            ...options
-        })
-    } catch(error) {
-        throw new Error("¡Ups!. The system is down")
+        response = await fetch(`${API_URL}${endpoint}`, options);
+        
+        if(response.status === 404){
+            throw new Error("¡Ups!. The System is down")
+        }
+    }catch(networkError) {
+        throw new Error(networkError);
     }
 
-    if(response.status !== status) {
-        throw new Error(errorMessage)
+    const data = await response.json();
+
+    try {
+        hasError(response.status, data, status);
+    }catch(error) {
+        throw error;
     }
-    
-    return response.json();
-};
+
+    return data;
+}
 
 export const getAllPlaces = async () => {
-    const options = {
+    return request({
+        method: "GET",
         headers: {
             "Accept": "application/json"
         }
-    }
-
-    return await handleFetch("/places", options, 200, "¡Ups!. An error ocurred while fetching the data")
-};
+    }, "/places")
+}
 
 export const getAllSelectedPlaces = async () => {
-    const options = {
+    return request({
+        method: "GET",
         headers: {
             "Accept": "application/json"
         }
-    }
-
-    return await handleFetch("/places/selected", options, 200, "¡Ups!. An error ocurred while fetching the selected places")
+    }, "/places/selected")
 };
 
 export const savePlaces = async (selectedPlaces) => {
-    const options = {
+    return request({
         method: "POST",
         headers: {
             "Content-Type": "application/json",
             "Accept": "application/json"
         },
         body: JSON.stringify(selectedPlaces)
-    }
-
-    return await handleFetch("/places/save", options, 201, "¡Ups!. An error ocurred while the saving places")
+    }, "/places/selected/save", 201)
 };
 
 export const createPlace = async (place) => {
-    const options = {
+    return request({
         method: "POST",
         headers: {
             "Content-Type": "application/json",
             "Accept": "application/json"
         },
         body: JSON.stringify(place)
-    }
-
-    return await handleFetch("/places/create", options, 201, "¡Ups!. An error ocurred while the creating place")
+    }, "/places/create", 201);
 };
+
+export const deletePlace = async (id) => {
+    return request({
+        method: "DELETE",
+        headers: {
+            "Accept": "application/json"
+        },
+    }, `/places/selected/delete/${id}`)
+};
+
+export const deletePlaces = async () => {
+    return request({
+        method: "DELETE",
+        headers: {
+            "Accept": "application/json"
+        },
+    }, "/places/selected/clear")
+}

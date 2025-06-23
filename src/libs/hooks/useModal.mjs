@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useLayoutEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 
 export function useModal() {
     const [isOpen, setIsOpen] = useState(false);
@@ -16,7 +16,7 @@ export function useModal() {
     }, [isOpen]);
 
     const handleToggleModal = () => {
-        setIsOpen(!isOpen);
+        setIsOpen(isOpen => !isOpen);
     }
 
     return {

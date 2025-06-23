@@ -1,13 +1,10 @@
 import Place from "../Place/Place.jsx";
 
-export default function ListPlace({ places, message, onClick }) {
-    if(message != null)
-        return message
-
+export default function ListPlace({ onClick, children }) {
     return (
         <ul>
-            {places.map(place => (
-                <Place key={place.id} {...place} onClick={onClick}/>
+            {children.length > 0 && children.map(place => (
+                <Place key={place.id} {...place} onClick={() => onClick(place.id)} />
             ))}
         </ul>
     );
